@@ -36,6 +36,10 @@ import org.apache.synapse.mediators.AbstractMediator;
 import org.apache.synapse.mediators.FlowContinuableMediator;
 import org.apache.synapse.mediators.Value;
 import org.apache.synapse.mediators.base.SequenceMediator;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.MediatorData;
+import org.apache.synapse.mediators.collector.SuperMediator;
+import org.apache.synapse.mediators.collector.TreeNode;
 import org.apache.synapse.mediators.eip.EIPConstants;
 import org.apache.synapse.mediators.eip.EIPUtils;
 import org.apache.synapse.util.MessageHelper;
@@ -101,7 +105,9 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
 
     /** Reference to the synapse environment */
     private SynapseEnvironment synapseEnv;
-
+    /** Reference to the currently executing node of the tree */
+	 private TreeNode current;
+	 
     public AggregateMediator() {
         try {
             aggregationExpression = new SynapseXPath("/s11:Envelope/s11:Body/child::*[position()=1] | " +
@@ -155,7 +161,9 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
     public boolean mediate(MessageContext synCtx) {
 
         SynapseLog synLog = getLog(synCtx);
-
+        if(CollectorEnabler.checkCollectorRequired())
+        	current=MediatorData.createNewMediator(synCtx, this);
+        
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Start : Aggregate mediator");
 
@@ -285,10 +293,16 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
                     
                 } else {
                     synLog.traceOrDebug("Unable to find aggrgation correlation property");
+                    if(CollectorEnabler.checkCollectorRequired()){
+                    	synCtx.setCurrent(current.getParent());
+                    }
                     return true;
                 }
             } else {
                 synLog.traceOrDebug("Unable to find aggrgation correlation XPath or property");
+                if(CollectorEnabler.checkCollectorRequired()){
+                synCtx.setCurrent(current.getParent());
+                }
                 return true;
             }
 
@@ -312,7 +326,13 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
                 if (aggregate.isComplete(synLog)) {
                     synLog.traceOrDebug("Aggregation completed - invoking onComplete");
                     boolean onCompleteSeqResult = completeAggregate(aggregate);
-                    
+                    //////////////////////////////////////////////
+					if (CollectorEnabler.checkCollectorRequired()) {
+						current = synCtx.getCurrent();
+						MediatorData.setEndingTime(current);
+						synCtx.setCurrent(current.getParent());
+					}
+                    //////////////////////////////////////
                     synLog.traceOrDebug("End : Aggregate mediator");
                     return onCompleteSeqResult;
                 } else {
@@ -324,6 +344,13 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
                 // normal path by returning true
 
                 synLog.traceOrDebug("Unable to find an aggregate for this message - skip");
+			////////////////////////////////////////////////////////////
+                if (CollectorEnabler.checkCollectorRequired()) {
+	                current=synCtx.getCurrent();
+	                MediatorData.setEndingTime(current);
+	                synCtx.setCurrent(current.getParent());
+				}
+           /////////////////////////////////////////////////////////
                 return true;
             }
 
@@ -332,7 +359,11 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
         }
 
         synLog.traceOrDebug("End : Aggregate mediator");
-
+        //////////////////////////////////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			synCtx.setCurrent(current.getParent());
+		}
+		////////////////////////////////////////////////////////
         // When Aggregation is not completed return false to hold the flow
         return false;
     }
@@ -340,7 +371,11 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
     public boolean mediate(MessageContext synCtx,
                            ContinuationState contState) {
         SynapseLog synLog = getLog(synCtx);
-
+        //////////////////////////////////////////////////////
+     		if (CollectorEnabler.checkCollectorRequired()) {
+     			synCtx.setCurrent(current);
+     		}
+       //////////////////////////////////////////////////
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Aggregate mediator : Mediating from ContinuationState");
         }
@@ -354,6 +389,12 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
                     getChild(contState.getPosition());
             result = mediator.mediate(synCtx, contState.getChildContState());
         }
+        //////////////////////////////////////////////////////
+     	if (CollectorEnabler.checkCollectorRequired()) {
+	        MediatorData.setEndingTime(current);
+	        synCtx.setCurrent(current.getParent());
+	     	}
+        //////////////////////////////////////////////////////////
         return result;
     }
 
@@ -388,7 +429,12 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
         }
         
         MessageContext newSynCtx = getAggregatedMessage(aggregate);
-
+        
+//////////////////////////////////////////////////////
+        		if (CollectorEnabler.checkCollectorRequired()) {
+        			newSynCtx.setCurrent(current);
+        		}
+        		///////////////////////////////////////////
         if (newSynCtx == null) {
             log.warn("An aggregation of messages timed out with no aggregated messages", null);
             return false;
@@ -420,13 +466,23 @@ public class AggregateMediator extends AbstractMediator implements ManagedLifecy
                 if (result) {
                     ContinuationStackManager.removeReliantContinuationState(newSynCtx);
                 }
+                //////////////////////////////////////////////////////
+        		if (CollectorEnabler.checkCollectorRequired()) {
+                newSynCtx.setCurrent(current);
+        		}
+        		/////////////////////////////////////////////////
                 return result;
 
             } else if (onCompleteSequenceRef != null
                 && newSynCtx.getSequence(onCompleteSequenceRef) != null) {
 
                 ContinuationStackManager.updateSeqContinuationState(newSynCtx, getMediatorPosition());
-                return newSynCtx.getSequence(onCompleteSequenceRef).mediate(newSynCtx);
+                //////////////////////////////////////////////////////
+        		if (CollectorEnabler.checkCollectorRequired()) {
+        			current=newSynCtx.getCurrent();
+        		}
+        		///////////////////////////////////////////
+				return newSynCtx.getSequence(onCompleteSequenceRef).mediate(newSynCtx);
 
             } else {
                 handleException("Unable to find the sequence for the mediation " +

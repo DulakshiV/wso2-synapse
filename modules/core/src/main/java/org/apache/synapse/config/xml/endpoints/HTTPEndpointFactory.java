@@ -117,8 +117,8 @@ public class HTTPEndpointFactory extends DefaultEndpointFactory {
                 httpEndpoint.setHttpMethod(Constants.Configuration.HTTP_METHOD_DELETE);
             } else if (httpMethod.equalsIgnoreCase(Constants.Configuration.HTTP_METHOD_HEAD)) {
                 httpEndpoint.setHttpMethod(Constants.Configuration.HTTP_METHOD_HEAD);
-            } else if (httpMethod.equalsIgnoreCase(Constants.Configuration.HTTP_METHOD_PATCH)) {
-                httpEndpoint.setHttpMethod(Constants.Configuration.HTTP_METHOD_PATCH);
+            } else if (httpMethod.equalsIgnoreCase("PATCH")) {
+                httpEndpoint.setHttpMethod("PATCH");
             } else if (httpMethod.equalsIgnoreCase(RESTConstants.METHOD_OPTIONS)) {
                 httpEndpoint.setHttpMethod(RESTConstants.METHOD_OPTIONS);
             } else {

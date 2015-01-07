@@ -28,6 +28,8 @@ import org.apache.synapse.SynapseConstants;
 import org.apache.synapse.SynapseException;
 import org.apache.synapse.continuation.ContinuationStackManager;
 import org.apache.synapse.mediators.base.SequenceMediator;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.TreeNode;
 
 /**
  * This implements the FaultHandler interface as a mediator fault handler. That is the fault handler is
@@ -45,7 +47,10 @@ public class MediatorFaultHandler extends FaultHandler {
      * This holds the fault sequence for the mediator fault handler
      */
     private Mediator faultMediator = null;
-
+    /**
+     * This holds a reference to the parent node that is in execution
+     */
+    private TreeNode current;
     /**
      * Constructs the FaultHandler object for handling mediator faults
      *
@@ -64,7 +69,11 @@ public class MediatorFaultHandler extends FaultHandler {
      * @see org.apache.synapse.FaultHandler#handleFault(org.apache.synapse.MessageContext)
      */
     public void onFault(MessageContext synCtx) throws SynapseException {
-
+    	//////////////////////////////////////////////////////
+    			if (CollectorEnabler.checkCollectorRequired()) {
+    				 current=synCtx.getCurrent();
+    			}
+    	//////////////////////////////////////////////
         boolean traceOn = synCtx.getTracingState() == SynapseConstants.TRACING_ON;
         boolean traceOrDebugOn = traceOn || log.isDebugEnabled();
 
@@ -84,6 +93,12 @@ public class MediatorFaultHandler extends FaultHandler {
 
         synCtx.getServiceLog().warn("Executing fault sequence mediator : " + name);
         this.faultMediator.mediate(synCtx);
+        //////////////////////////////////////////////////////
+     	if (CollectorEnabler.checkCollectorRequired()) {
+        synCtx.setCurrent(current);
+     	}
+     	////////////////////////////////////
+      
     }
 
     /**

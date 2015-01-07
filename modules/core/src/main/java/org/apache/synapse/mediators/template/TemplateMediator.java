@@ -23,7 +23,13 @@ import org.apache.synapse.SynapseConstants;
 import org.apache.synapse.SynapseLog;
 import org.apache.synapse.core.SynapseEnvironment;
 import org.apache.synapse.mediators.AbstractListMediator;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.MediatorData;
+import org.apache.synapse.mediators.collector.NestedMediator;
+import org.apache.synapse.mediators.collector.SuperMediator;
+import org.apache.synapse.mediators.collector.TreeNode;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Stack;
 
@@ -44,7 +50,10 @@ public class TemplateMediator extends AbstractListMediator {
     private boolean initialized = false;
     /** is this definition dynamic */
     private boolean dynamic = false;
-
+    
+    /** Reference to the currently executing node */
+    private TreeNode current;
+   
     public void setParameters(Collection<String> paramNames) {
         this.paramNames = paramNames;
     }
@@ -63,7 +72,13 @@ public class TemplateMediator extends AbstractListMediator {
 
     public boolean mediate(MessageContext synCtx) {
         SynapseLog synLog = getLog(synCtx);
-
+    	// ///////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			current= MediatorData.createNewMediator(synCtx, this);
+		}
+		// //////////////////////////
+	
+		
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Start : EIP Sequence " + "paramNames : " + paramNames);
 
@@ -80,7 +95,14 @@ public class TemplateMediator extends AbstractListMediator {
                 popFuncContextFrom(synCtx);
             }
         }
-        return result;
+     
+		// ///////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			MediatorData.setEndingTime(current);
+			synCtx.setCurrent(current.getParent());
+		}
+		// //////////////////////////
+       return result;
     }
 
     /**

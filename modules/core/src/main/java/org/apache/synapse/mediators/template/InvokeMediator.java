@@ -29,8 +29,14 @@ import org.apache.synapse.core.SynapseEnvironment;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.apache.synapse.mediators.FlowContinuableMediator;
 import org.apache.synapse.mediators.Value;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.MediatorData;
+import org.apache.synapse.mediators.collector.NestedMediator;
+import org.apache.synapse.mediators.collector.SuperMediator;
+import org.apache.synapse.mediators.collector.TreeNode;
 import org.apache.synapse.mediators.eip.EIPUtils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -67,6 +73,11 @@ public class InvokeMediator extends AbstractMediator implements
 
     /** Reference to the synapse environment */
     private SynapseEnvironment synapseEnv;
+    
+    /** Reference to the currently executing node */
+    private TreeNode current;
+  
+	
 
 	public InvokeMediator() {
 		// LinkedHashMap is used to preserve tag order
@@ -80,8 +91,13 @@ public class InvokeMediator extends AbstractMediator implements
 
 	private boolean mediate(MessageContext synCtx, boolean executePreFetchingSequence) {
 		SynapseLog synLog = getLog(synCtx);
-
-		if (synLog.isTraceOrDebugEnabled()) {
+		//////////////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			//Create a parent node and set it as the pointer to it.
+			current = MediatorData.createNewMediator(synCtx, this);
+		}
+		/////////////////////////////////////
+if (synLog.isTraceOrDebugEnabled()) {
 			synLog.traceOrDebug("Invoking Target EIP Sequence " + targetTemplate +
 			                    " paramNames : " + pName2ExpressionMap.keySet());
 			if (synLog.isTraceTraceEnabled()) {
@@ -115,6 +131,12 @@ public class InvokeMediator extends AbstractMediator implements
                 if (result) {
                     ContinuationStackManager.removeReliantContinuationState(synCtx);
                 } else {
+                	/////////////////////////////////////
+                	if (CollectorEnabler.checkCollectorRequired()) {
+                		//Set the pointer to the parent node of this node
+    				synCtx.setCurrent(current.getParent());
+                	}
+                	/////////////////////////////////////////
                     return false;
                 }
             }
@@ -126,18 +148,40 @@ public class InvokeMediator extends AbstractMediator implements
                 ContinuationStackManager.addReliantContinuationState(
                         synCtx, 0, getMediatorPosition());
             }
+            /////////////////////////////////////////
+            if (CollectorEnabler.checkCollectorRequired()) {
+        		//Set a pointer in the syNCtx changing the current node to this
+            	synCtx.setCurrent(current);
+            }
+            ////////////////////////////////////////////
             boolean result = mediator.mediate(synCtx);
 			if (result && executePreFetchingSequence) {
 				ContinuationStackManager.removeReliantContinuationState(synCtx);
 			}
+			//////////////////////////////////////////////
+			if (CollectorEnabler.checkCollectorRequired()) {
+				MediatorData.setEndingTime(current);
+				synCtx.setCurrent(current.getParent());
+			}
+			///////////////////////////////////////
 			return result;
 		}
+		/////////////////////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			synCtx.setCurrent(current.getParent());
+		}
+		/////////////////////////////////////////
 		return false;
 	}
 
     public boolean mediate(MessageContext synCtx, ContinuationState continuationState) {
         SynapseLog synLog = getLog(synCtx);
-
+        /////////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			//Since the medation occurs from a continuation state, set the current node pointer of the synCtx to the node of this instance
+			synCtx.setCurrent(current);
+		}
+		/////////////////////////////////////////
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Invoke mediator : Mediating from ContinuationState");
         }
@@ -180,6 +224,12 @@ public class InvokeMediator extends AbstractMediator implements
                 result = mediate(synCtx, false);
             }
         }
+        ////////////////////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			MediatorData.setEndingTime(current);
+			synCtx.setCurrent(current.getParent());
+		}
+		/////////////////////////////////////
         return result;
     }
 

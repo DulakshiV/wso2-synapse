@@ -188,10 +188,7 @@ public class MessageHelper {
                 }
             }
         }
-		 if (CollectorEnabler.checkCollectorRequired()) {
-
-        	newCtx.setCurrent(MessageHelper.cloneTree(newCtx, synCtx)) ;
-        }
+		 newCtx.setCurrent(MessageHelper.cloneTree(newCtx, synCtx)) ;
         return newCtx;
     }
     

@@ -19,13 +19,20 @@
 
 package org.apache.synapse.mediators.filters;
 
+import java.util.ArrayList;
+
 import org.apache.synapse.ContinuationState;
+import org.apache.synapse.Mediator;
 import org.apache.synapse.MessageContext;
 import org.apache.synapse.SynapseLog;
 import org.apache.synapse.continuation.ContinuationStackManager;
 import org.apache.synapse.core.SynapseEnvironment;
 import org.apache.synapse.mediators.AbstractListMediator;
 import org.apache.synapse.mediators.FlowContinuableMediator;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.MediatorData;
+import org.apache.synapse.mediators.collector.SuperMediator;
+import org.apache.synapse.mediators.collector.TreeNode;
 
 /**
  * The Out Mediator acts only on "outgoing" messages from synapse. This is
@@ -42,8 +49,16 @@ public class OutMediator extends AbstractListMediator implements org.apache.syna
      * @param synCtx the current message
      * @return true if filter condition fails. else returns as per List mediator semantics
      */
+	//
+//	 SuperMediator a;
+	private TreeNode current;
+	
     public boolean mediate(MessageContext synCtx) {
-        
+    	// ///////////////////////////
+    	if (CollectorEnabler.checkCollectorRequired()) {
+    		current= MediatorData.createNewMediator(synCtx, this);
+    	}
+    	// //////////////////////////
         SynapseLog synLog = getLog(synCtx);
 
         if (synLog.isTraceOrDebugEnabled()) {
@@ -59,10 +74,27 @@ public class OutMediator extends AbstractListMediator implements org.apache.syna
             synLog.traceOrDebug("Current message is outgoing - executing child mediators");
             ContinuationStackManager.addReliantContinuationState(synCtx, 0, getMediatorPosition());
             result = super.mediate(synCtx);
+         // ///////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			MediatorData.setEndingTime(current);
+			synCtx.setCurrent(current.getParent());
+		}
+		// //////////////////////////
             if (result) {
                 ContinuationStackManager.removeReliantContinuationState(synCtx);
             }
         } else {
+        	/////////////////////////////
+			//Adding this mediator is of no use since its child mediators are not executed. Therefore
+			//change its name and later the change node will be removed from the tree.
+			if(CollectorEnabler.checkCollectorRequired()){
+			
+				current.getContents().setMediatorName("Skipped");
+				synCtx.setCurrent(current.getParent());
+			 
+			}
+			////////////////////////////
+        	 
             synLog.traceOrDebug("Current message is a request - skipping child mediators");
         }
 
@@ -73,7 +105,13 @@ public class OutMediator extends AbstractListMediator implements org.apache.syna
 
     public boolean mediate(MessageContext synCtx,
                            ContinuationState continuationState) {
-        SynapseLog synLog = getLog(synCtx);
+    	
+    	/////////////////////////////
+		if(CollectorEnabler.checkCollectorRequired()){
+			synCtx.setCurrent(current);
+		}
+		////////////////////////////
+		        SynapseLog synLog = getLog(synCtx);
 
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Out mediator : Mediating from ContinuationState");
@@ -87,6 +125,13 @@ public class OutMediator extends AbstractListMediator implements org.apache.syna
                     (FlowContinuableMediator) getChild(continuationState.getPosition());
             result = mediator.mediate(synCtx, continuationState.getChildContState());
         }
+		// ///////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+				MediatorData.setEndingTime(current);
+				synCtx.setCurrent(current.getParent());
+		}
+		// //////////////////////////
+
         return result;
     }
 

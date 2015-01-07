@@ -51,6 +51,10 @@ import org.apache.synapse.core.axis2.Axis2Sender;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.apache.synapse.mediators.FlowContinuableMediator;
 import org.apache.synapse.mediators.base.SequenceMediator;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.MediatorData;
+import org.apache.synapse.mediators.collector.SuperMediator;
+import org.apache.synapse.mediators.collector.TreeNode;
 import org.apache.synapse.util.FixedByteArrayOutputStream;
 import org.apache.synapse.util.MessageHelper;
 import org.wso2.caching.CachableResponse;
@@ -91,6 +95,8 @@ public class CacheMediator extends AbstractMediator implements ManagedLifecycle,
     private static final String CACHE_KEY_PREFIX = "synapse.cache_key_";
 
     private String cacheKey = "synapse.cache_key";
+	
+	private TreeNode current;
 
     final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
     private boolean isResponseSOAP11 =false;
@@ -108,7 +114,12 @@ public class CacheMediator extends AbstractMediator implements ManagedLifecycle,
     }
 
     public boolean mediate(MessageContext synCtx) {
-
+   ///////////////////////////////////////////
+        if(CollectorEnabler.checkCollectorRequired()){
+    	current=MediatorData.createNewMediator(synCtx, this);
+        }
+        
+ ////////////////////////////////////
         SynapseLog synLog = getLog(synCtx);
 
         if (synLog.isTraceOrDebugEnabled()) {
@@ -134,7 +145,13 @@ public class CacheMediator extends AbstractMediator implements ManagedLifecycle,
                 handleException("Error in checking the message size", e, synCtx);
             } catch (SynapseException syne) {
                 synLog.traceOrDebug("Message size exceeds the upper bound for caching, " +
-                        "request will not be cached");
+                            "request will not be cached");
+                ///////////////////////////////////////////
+                if(CollectorEnabler.checkCollectorRequired()){
+                	MediatorData.setEndingTime(current);
+                	synCtx.setCurrent(current.getParent());
+                }
+                //////////////////////////////////////////
                 return true;
             }
         }
@@ -187,13 +204,22 @@ public class CacheMediator extends AbstractMediator implements ManagedLifecycle,
         }
 
         synLog.traceOrDebug("End : Cache mediator");
-
+        ///////////////////////////////////////////
+        if(CollectorEnabler.checkCollectorRequired()){
+        	MediatorData.setEndingTime(current);
+        	synCtx.setCurrent(current.getParent());
+        }
+        //////////////////////////////////////////
         return result;
     }
 
     public boolean mediate(MessageContext synCtx, ContinuationState contState) {
         SynapseLog synLog = getLog(synCtx);
-
+        ///////////////////////////////////////////
+        if(CollectorEnabler.checkCollectorRequired()){
+        	synCtx.setCurrent(current);
+        }
+        /////////////////////////////////////////
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Aggregate mediator : Mediating from ContinuationState");
         }
@@ -205,7 +231,13 @@ public class CacheMediator extends AbstractMediator implements ManagedLifecycle,
                     getChild(contState.getPosition());
             mediator.mediate(synCtx, contState.getChildContState());
         }
-        return false;
+        ///////////////////////////////////////////
+        if(CollectorEnabler.checkCollectorRequired()){
+        	MediatorData.setEndingTime(current);
+        	synCtx.setCurrent(current.getParent());
+        }
+        //////////////////////////////////////////
+         return false;
     }
 
     /**

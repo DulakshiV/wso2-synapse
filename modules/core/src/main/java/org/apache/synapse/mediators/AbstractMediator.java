@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.*;
 import org.apache.synapse.aspects.AspectConfigurable;
 import org.apache.synapse.aspects.AspectConfiguration;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.MediatorData;
 
 /**
  * This is the super class of all mediators, and defines common logging, tracing other aspects
@@ -49,6 +51,12 @@ public abstract class AbstractMediator implements Mediator, AspectConfigurable {
     private String shortDescription;
 
     private int mediatorPosition = 0;
+    
+    private long time;
+    
+ 
+    
+   
 
     /**
      * A constructor that makes subclasses pick up the correct logger
@@ -263,7 +271,13 @@ public abstract class AbstractMediator implements Mediator, AspectConfigurable {
      * @param msgContext the message context
      */
     protected void handleException(String msg, MessageContext msgContext) {
-        log.error(msg);
+
+		if (CollectorEnabler.checkCollectorRequired()) {
+			// If an exception is thrown since the execution of the mediators
+			// halt, publish the current tree to the list
+			MediatorData.toTheList(msgContext.getRoot());
+		}        
+		log.error(msg);
         if (msgContext.getServiceLog() != null) {
             msgContext.getServiceLog().error(msg);
         }

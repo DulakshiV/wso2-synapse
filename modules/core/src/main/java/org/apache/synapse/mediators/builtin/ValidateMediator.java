@@ -33,6 +33,9 @@ import org.apache.synapse.mediators.AbstractListMediator;
 import org.apache.synapse.mediators.FlowContinuableMediator;
 import org.apache.synapse.mediators.MediatorProperty;
 import org.apache.synapse.mediators.Value;
+import org.apache.synapse.mediators.collector.CollectorEnabler;
+import org.apache.synapse.mediators.collector.MediatorData;
+import org.apache.synapse.mediators.collector.TreeNode;
 import org.apache.synapse.util.AXIOMUtils;
 import org.apache.synapse.util.jaxp.SchemaResourceResolver;
 import org.apache.synapse.util.resolver.ResourceMap;
@@ -101,7 +104,10 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
      * Lock used to ensure thread-safe creation and use of the above Validator
      */
     private final Object validatorLock = new Object();
-
+    /**
+     * Holds the reference to the node that contains data of the currently executing parent mediator
+     */
+    private TreeNode current;
     /**
      * The SchemaFactory used to create new schema instances.
      */
@@ -112,7 +118,11 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
     public boolean mediate(MessageContext synCtx) {
 
         SynapseLog synLog = getLog(synCtx);
-
+        // ////////////////////////////
+        if (CollectorEnabler.checkCollectorRequired()) {
+    	 current=MediatorData.createNewMediator(synCtx, this);
+        }
+        ////////////////////////////////
         synLog.traceOrDebug("Start : Validate mediator");
         if (synLog.isTraceTraceEnabled()) {
             synLog.traceTrace("Message : " + synCtx.getEnvelope());
@@ -224,6 +234,12 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
                 if (result) {
                     ContinuationStackManager.removeReliantContinuationState(synCtx);
                 }
+                ////////////////////////////////
+                if (CollectorEnabler.checkCollectorRequired()) {
+                MediatorData.setEndingTime(current);
+                synCtx.setCurrent(current.getParent());
+                }
+                //////////////////////////////////
                 return result;
             }
         } catch (SAXException e) {
@@ -237,15 +253,26 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
                 + source + " succeeded against the given schemas and the current message");
             synLog.traceOrDebug("End : Validate mediator");
         }
-
-        return true;
+        ////////////////////////////////
+        if (CollectorEnabler.checkCollectorRequired()) {
+        MediatorData.setEndingTime(current);
+        synCtx.setCurrent(current.getParent());
+        }
+        //////////////////////////////////
+         return true;
     }
 
     public boolean mediate(MessageContext synCtx,
                            ContinuationState continuationState) {
 
         SynapseLog synLog = getLog(synCtx);
-
+        // ////////////////////////////
+        if (CollectorEnabler.checkCollectorRequired()) {
+        	  synCtx.setCurrent(current);
+        }
+        //////////////////////////////////
+       
+      
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Validate mediator : Mediating from ContinuationState");
         }
@@ -258,7 +285,13 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
                     (FlowContinuableMediator) getChild(continuationState.getPosition());
             result = mediator.mediate(synCtx, continuationState.getChildContState());
         }
-        return result;
+        ////////////////////////////////
+        if (CollectorEnabler.checkCollectorRequired()) {
+        	MediatorData.setEndingTime(current);
+        	synCtx.setCurrent(current.getParent());
+        }
+        //////////////////////////////////
+          return result;
     }
 
     /**
