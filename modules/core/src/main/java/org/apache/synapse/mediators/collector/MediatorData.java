@@ -78,7 +78,7 @@ public class MediatorData {
 		switch (sequenceType) {
 
 		case PROXY_INSEQ: {
-		    /////////////////////////////////////////////////////////////////
+		   	/////////////////////////////////////////////////////////////
 			//	A PROXY_FAULTSEQ doesnt create a new MessageContext. As the propert "Root" is altered
 			//	it will lose the original reference of the PROXY_INSEQ. Hence to keep the old reference
 			//	intact  "NonFaultRoot" property is used
@@ -88,7 +88,6 @@ public class MediatorData {
 					SynapseConstants.PROXY_SERVICE).toString());
 			if(test(synCtx)){
 			newMediator.setReq_resp("Request");
-			System.out.println("Setting request");
 			}
 			break;
 		}
@@ -98,7 +97,6 @@ public class MediatorData {
 					SynapseConstants.PROXY_SERVICE).toString());
 			if(!test(synCtx)){
 				newMediator.setReq_resp("Response");
-			System.out.println("Setting response");
 		}
 			break;
 		}
@@ -114,7 +112,6 @@ public class MediatorData {
 					RESTConstants.SYNAPSE_REST_API).toString());
 			if(test(synCtx)){
 				newMediator.setReq_resp("Request");
-				System.out.println("Setting request");
 				}
 			synCtx.setProperty("NonFaultRoot", root);
 			break;
@@ -131,7 +128,6 @@ public class MediatorData {
 					RESTConstants.SYNAPSE_REST_API).toString());
 			if(!test(synCtx)){
 				newMediator.setReq_resp("Response");
-			System.out.println("Setting response");
 		}
 			break;
 		}
