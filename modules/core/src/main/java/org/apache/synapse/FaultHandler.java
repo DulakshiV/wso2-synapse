@@ -44,7 +44,7 @@ public abstract class FaultHandler {
     private static final Log trace = LogFactory.getLog(SynapseConstants.TRACE_LOGGER);
 
     public void handleFault(MessageContext synCtx) {
-    	///////////////////////////////////////////
+     
     	if (CollectorEnabler.checkCollectorRequired()) {
            //If the faulthandler is invoked from the call mediator ppublish the current tree to the list
     		if (synCtx.getCurrent().getLastChild().getContents()
@@ -58,7 +58,7 @@ public abstract class FaultHandler {
     		nowCurrent.getLastFaultChild().getContents().setSuccess(false);
     		MediatorData.setEndingTime(nowCurrent.getLastFaultChild());
     	}
-    	/////////////////////////////////
+     
     	 
         boolean traceOn = synCtx.getTracingState() == SynapseConstants.TRACING_ON;
         boolean traceOrDebugOn = traceOn || log.isDebugEnabled();
