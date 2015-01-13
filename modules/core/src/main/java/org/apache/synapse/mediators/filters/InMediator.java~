@@ -56,11 +56,11 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
      */
     public boolean mediate(MessageContext synCtx) {
 		
-		
+		// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 			current= MediatorData.createNewMediator(synCtx, this);
 		}
-		
+		// //////////////////////////
 
         SynapseLog synLog = getLog(synCtx);
 
@@ -77,19 +77,19 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
             synLog.traceOrDebug("Current message is incoming - executing child mediators");
             ContinuationStackManager.addReliantContinuationState(synCtx, 0, getMediatorPosition());
             result = super.mediate(synCtx);
-			
+			// ///////////////////////////
 			if (CollectorEnabler.checkCollectorRequired()) {
 				MediatorData.setEndingTime(current);
 				synCtx.setCurrent(current.getParent());
 			}
-			
+			// //////////////////////////
             if (result) {
                 ContinuationStackManager.removeReliantContinuationState(synCtx);
             }
         } else {
             synLog.traceOrDebug("Current message is a response - skipping child mediators");
         	
-			
+			/////////////////////////////
 			//Adding this mediator is of no use since its child mediators are not executed. Therefore
 			//change its name and later the change node will be removed from the tree.
 			if(CollectorEnabler.checkCollectorRequired()){
@@ -98,7 +98,7 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
 				synCtx.setCurrent(current.getParent());
 			 
 			}
-			
+			////////////////////////////
 		}
 
         synLog.traceOrDebug("End : In mediator");
@@ -108,11 +108,11 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
 
     public boolean mediate(MessageContext synCtx,
                            ContinuationState continuationState) {
-		
+		/////////////////////////////
 		if(CollectorEnabler.checkCollectorRequired()){
 			synCtx.setCurrent(current);
 		}
-		
+		////////////////////////////
         SynapseLog synLog = getLog(synCtx);
 
         if (synLog.isTraceOrDebugEnabled()) {
@@ -128,12 +128,12 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
             result = mediator.mediate(synCtx, continuationState.getChildContState());
         }
 
-		
+		// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 				MediatorData.setEndingTime(current);
 				synCtx.setCurrent(current.getParent());
 		}
-		
+		// //////////////////////////
 
         return result;
     }

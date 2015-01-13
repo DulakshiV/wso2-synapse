@@ -92,9 +92,9 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
 
         SynapseLog synLog = getLog(synCtx);
 
-	
+	/////////////////////////////////////////
 		super.setSequenceType(this.sequenceType);
-	 
+	 ////////////////////////////////////////////////
 
         if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Start : Sequence "
@@ -108,7 +108,7 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
 
         if (key == null) {
 
-			
+			/////////////////////////
 			if (CollectorEnabler.checkCollectorRequired()) {
 				// If the currently executing mediator is a SequenceMediator it is added to the list as a parent node 
 				MediatorData.addNestedMediator(synCtx, this.sequenceType, this);
@@ -116,7 +116,7 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
 
 		
 			}
-
+//////////////////////////////
 
             // The onError sequence for handling errors which may occur during the
             // mediation through this sequence
@@ -184,7 +184,7 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
                     synLog.traceOrDebug(
                             "End : Sequence <" + (name == null ? "anonymous" : name) + ">");
                 }
-				
+				///////////////////////////////////////////
 				if (CollectorEnabler.checkCollectorRequired()) {
 					// Set the ending time of the current node
 					MediatorData.setEndingTime(current);
@@ -212,7 +212,7 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
 					// set the current node as the parent of this node as this
 					// is the end of the mediator
 					synCtx.setCurrent(current.getParent());
-					
+					////////////////////////
 				}
                 return result;
 
@@ -290,25 +290,25 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
         }
 
         boolean result;
-		
+		//////////////////////////////////////////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {		
 		synCtx.setCurrent(current);
 		synLog.traceOrDebug("********** Printing current node from Continuation State of SequenceMediator:"
 				+ current.getContents().getMediatorName());
 		}
-		
+		/////////////////////////////////////////////////////////////
         if (!continuationState.hasChild()) {
             result = super.mediate(synCtx, continuationState.getPosition() + 1);
         } else {
             // if children exists first mediate from them starting from grandchild.
             do {
-				
+				/////////////////////////////////////////////
 				if (CollectorEnabler.checkCollectorRequired()) {
 				synCtx.setCurrent(current);
 				synLog.traceOrDebug("********** FlowContinuable Mediator to be executed from Continuation State of SequenceMediator"
 						+ getChild(continuationState.getPosition()));
 				}
-			  
+			   /////////////////////////////////////////////
                 FlowContinuableMediator mediator =
                         (FlowContinuableMediator) getChild(continuationState.getPosition());
                 result = mediator.mediate(synCtx,
@@ -321,13 +321,13 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
 
             if (result) {
                 // after mediating from children, mediate from current SeqContinuationState
-				
+				/////////////////////////////////////////////////////////////////////////////////////
 				if (CollectorEnabler.checkCollectorRequired()) {				
 				synCtx.setCurrent(current);
 				synLog.traceOrDebug("********** Printing current node after mediating from children of Continuation State of SequenceMediator:"
 						+ current.getContents().getMediatorName());
 				}
-				               
+				//////////////////////////////////////////////////////////////////////////////////////                
 			result = super.mediate(synCtx, continuationState.getPosition() + 1);
             }
         }
@@ -351,7 +351,7 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
                 }
             }
         }
-		
+		/////////////////////////////////////////////////////////////////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {		
 		MediatorData.setEndingTime(current);
 		if (result) {
@@ -364,7 +364,7 @@ public class SequenceMediator extends AbstractListMediator implements Nameable,
 
 		synCtx.setCurrent(current.getParent()); // only if proxy_inseq doesn't arrive at this point
 		}		
-		
+		////////////////////////////////////////////////////////////////////////////////////////
 
         return result;
     }

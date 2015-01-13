@@ -72,11 +72,11 @@ public class TemplateMediator extends AbstractListMediator {
 
     public boolean mediate(MessageContext synCtx) {
         SynapseLog synLog = getLog(synCtx);
-    	
+    	// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 			current= MediatorData.createNewMediator(synCtx, this);
 		}
-		
+		// //////////////////////////
 	
 		
         if (synLog.isTraceOrDebugEnabled()) {
@@ -96,12 +96,12 @@ public class TemplateMediator extends AbstractListMediator {
             }
         }
      
-		
+		// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 			MediatorData.setEndingTime(current);
 			synCtx.setCurrent(current.getParent());
 		}
-		
+		// //////////////////////////
        return result;
     }
 

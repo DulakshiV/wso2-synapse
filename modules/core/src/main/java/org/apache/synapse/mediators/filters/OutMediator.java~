@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import org.apache.synapse.ContinuationState;
 import org.apache.synapse.Mediator;
 import org.apache.synapse.MessageContext;
-import org.apache.synapse.SequenceType;
 import org.apache.synapse.SynapseLog;
 import org.apache.synapse.continuation.ContinuationStackManager;
 import org.apache.synapse.core.SynapseEnvironment;
@@ -32,40 +31,38 @@ import org.apache.synapse.mediators.AbstractListMediator;
 import org.apache.synapse.mediators.FlowContinuableMediator;
 import org.apache.synapse.mediators.collector.CollectorEnabler;
 import org.apache.synapse.mediators.collector.MediatorData;
-import org.apache.synapse.mediators.collector.NestedMediator;
 import org.apache.synapse.mediators.collector.SuperMediator;
 import org.apache.synapse.mediators.collector.TreeNode;
 
-import sun.security.util.Length;
-
 /**
- * The In Mediator acts only on "incoming" messages into synapse. This is
+ * The Out Mediator acts only on "outgoing" messages from synapse. This is
  * performed by looking at the result of MessageContext#isResponse()
  *
  * @see org.apache.synapse.MessageContext#isResponse()
  */
-public class InMediator extends AbstractListMediator implements org.apache.synapse.mediators.FilterMediator,
-                                                                FlowContinuableMediator {
-	
-	private TreeNode current;
+public class OutMediator extends AbstractListMediator implements org.apache.synapse.mediators.FilterMediator,
+                                                                 FlowContinuableMediator {
+
     /**
      * Executes the list of sub/child mediators, if the filter condition is satisfied
      *
      * @param synCtx the current message
      * @return true if filter condition fails. else returns as per List mediator semantics
      */
+	//
+//	 SuperMediator a;
+	private TreeNode current;
+	
     public boolean mediate(MessageContext synCtx) {
-		
-		
-		if (CollectorEnabler.checkCollectorRequired()) {
-			current= MediatorData.createNewMediator(synCtx, this);
-		}
-		
-
+    	// ///////////////////////////
+    	if (CollectorEnabler.checkCollectorRequired()) {
+    		current= MediatorData.createNewMediator(synCtx, this);
+    	}
+    	// //////////////////////////
         SynapseLog synLog = getLog(synCtx);
 
         if (synLog.isTraceOrDebugEnabled()) {
-            synLog.traceOrDebug("Start : In mediator");
+            synLog.traceOrDebug("Start : Out mediator");
 
             if (synLog.isTraceTraceEnabled()) {
                 synLog.traceTrace("Message : " + synCtx.getEnvelope());
@@ -74,22 +71,20 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
 
         boolean result = true;
         if (test(synCtx)) {
-            synLog.traceOrDebug("Current message is incoming - executing child mediators");
+            synLog.traceOrDebug("Current message is outgoing - executing child mediators");
             ContinuationStackManager.addReliantContinuationState(synCtx, 0, getMediatorPosition());
             result = super.mediate(synCtx);
-			
-			if (CollectorEnabler.checkCollectorRequired()) {
-				MediatorData.setEndingTime(current);
-				synCtx.setCurrent(current.getParent());
-			}
-			
+         // ///////////////////////////
+		if (CollectorEnabler.checkCollectorRequired()) {
+			MediatorData.setEndingTime(current);
+			synCtx.setCurrent(current.getParent());
+		}
+		// //////////////////////////
             if (result) {
                 ContinuationStackManager.removeReliantContinuationState(synCtx);
             }
         } else {
-            synLog.traceOrDebug("Current message is a response - skipping child mediators");
-        	
-			
+        	/////////////////////////////
 			//Adding this mediator is of no use since its child mediators are not executed. Therefore
 			//change its name and later the change node will be removed from the tree.
 			if(CollectorEnabler.checkCollectorRequired()){
@@ -98,25 +93,28 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
 				synCtx.setCurrent(current.getParent());
 			 
 			}
-			
-		}
+			////////////////////////////
+        	 
+            synLog.traceOrDebug("Current message is a request - skipping child mediators");
+        }
 
-        synLog.traceOrDebug("End : In mediator");
+        synLog.traceOrDebug("End : Out mediator");
 
         return result;
     }
 
     public boolean mediate(MessageContext synCtx,
                            ContinuationState continuationState) {
-		
+    	
+    	/////////////////////////////
 		if(CollectorEnabler.checkCollectorRequired()){
 			synCtx.setCurrent(current);
 		}
-		
-        SynapseLog synLog = getLog(synCtx);
+		////////////////////////////
+		        SynapseLog synLog = getLog(synCtx);
 
         if (synLog.isTraceOrDebugEnabled()) {
-            synLog.traceOrDebug("In mediator : Mediating from ContinuationState");
+            synLog.traceOrDebug("Out mediator : Mediating from ContinuationState");
         }
 
         boolean result;
@@ -127,25 +125,24 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
                     (FlowContinuableMediator) getChild(continuationState.getPosition());
             result = mediator.mediate(synCtx, continuationState.getChildContState());
         }
-
-		
+		// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 				MediatorData.setEndingTime(current);
 				synCtx.setCurrent(current.getParent());
 		}
-		
+		// //////////////////////////
 
         return result;
     }
 
     /**
-     * Apply mediation only on request messages
+     * Apply mediation only on response messages
      *
      * @param synCtx the message context
      * @return MessageContext#isResponse()
      */
     public boolean test(MessageContext synCtx) {
-        return !synCtx.isResponse();
+        return synCtx.isResponse();
     }
 
     @Override
@@ -156,5 +153,4 @@ public class InMediator extends AbstractListMediator implements org.apache.synap
     public void init(SynapseEnvironment se) {
         super.init(se);
     }
-
 }

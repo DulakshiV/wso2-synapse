@@ -90,11 +90,11 @@ public class IterateMediator extends AbstractMediator implements ManagedLifecycl
      * @return boolean false if need to stop processing of the parent message
      */
     public boolean mediate(MessageContext synCtx) {
-    	 
+    	  ////////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
         	current=MediatorData.createNewMediator(synCtx, this);
         }
-        
+        ////////////////////////////////////////
         
     	
         SynapseLog synLog = getLog(synCtx);
@@ -170,12 +170,12 @@ public class IterateMediator extends AbstractMediator implements ManagedLifecycl
         }
 
         synLog.traceOrDebug("End : Iterate mediator");
-        
+        ////////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
         	MediatorData.setEndingTime(current);
         	synCtx.setCurrent(current.getParent());
         }
-        
+        ////////////////////////////////////////
          // whether to continue mediation on the original message
         return continueParent;
     }
@@ -183,11 +183,11 @@ public class IterateMediator extends AbstractMediator implements ManagedLifecycl
     public boolean mediate(MessageContext synCtx,
                            ContinuationState continuationState) {
         SynapseLog synLog = getLog(synCtx);
-        
+        ////////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
             synCtx.setCurrent(current);
         }
-        
+        ////////////////////////////////////////
         
    
         if (synLog.isTraceOrDebugEnabled()) {
@@ -203,12 +203,12 @@ public class IterateMediator extends AbstractMediator implements ManagedLifecycl
                             getChild(continuationState.getPosition());
             result = mediator.mediate(synCtx, continuationState.getChildContState());
         }
-       
+        ////////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
         	MediatorData.setEndingTime(current);
         	synCtx.setCurrent(current.getParent());
         }
-       
+        ////////////////////////////////////////
         
         return result;
     }
@@ -283,7 +283,9 @@ public class IterateMediator extends AbstractMediator implements ManagedLifecycl
         return newCtx;
     }
 
-    
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                        Getters and Setters                                        //
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     public boolean isContinueParent() {
         return continueParent;

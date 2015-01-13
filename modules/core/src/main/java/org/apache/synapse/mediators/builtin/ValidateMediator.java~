@@ -118,11 +118,11 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
     public boolean mediate(MessageContext synCtx) {
 
         SynapseLog synLog = getLog(synCtx);
-        
+        // ////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
     	 current=MediatorData.createNewMediator(synCtx, this);
         }
-        
+        ////////////////////////////////
         synLog.traceOrDebug("Start : Validate mediator");
         if (synLog.isTraceTraceEnabled()) {
             synLog.traceTrace("Message : " + synCtx.getEnvelope());
@@ -234,12 +234,12 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
                 if (result) {
                     ContinuationStackManager.removeReliantContinuationState(synCtx);
                 }
-                
+                ////////////////////////////////
                 if (CollectorEnabler.checkCollectorRequired()) {
                 MediatorData.setEndingTime(current);
                 synCtx.setCurrent(current.getParent());
                 }
-               
+                //////////////////////////////////
                 return result;
             }
         } catch (SAXException e) {
@@ -253,12 +253,12 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
                 + source + " succeeded against the given schemas and the current message");
             synLog.traceOrDebug("End : Validate mediator");
         }
-       
+        ////////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
         MediatorData.setEndingTime(current);
         synCtx.setCurrent(current.getParent());
         }
-       
+        //////////////////////////////////
          return true;
     }
 
@@ -266,11 +266,11 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
                            ContinuationState continuationState) {
 
         SynapseLog synLog = getLog(synCtx);
-        
+        // ////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
         	  synCtx.setCurrent(current);
         }
-        
+        //////////////////////////////////
        
       
         if (synLog.isTraceOrDebugEnabled()) {
@@ -285,12 +285,12 @@ public class ValidateMediator extends AbstractListMediator implements FlowContin
                     (FlowContinuableMediator) getChild(continuationState.getPosition());
             result = mediator.mediate(synCtx, continuationState.getChildContState());
         }
-       
+        ////////////////////////////////
         if (CollectorEnabler.checkCollectorRequired()) {
         	MediatorData.setEndingTime(current);
         	synCtx.setCurrent(current.getParent());
         }
-       
+        //////////////////////////////////
           return result;
     }
 

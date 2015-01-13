@@ -293,12 +293,12 @@ public class SynapseCallbackReceiver extends CallbackReceiver {
 
             //Processes 'Accept-Encoding'
             ResponseAcceptEncodingProcessor.process(response, axisOutMsgCtx);
-            
+            ////////////////////////////////////////////////////////////
             if(CollectorEnabler.checkCollectorRequired()){
             	//Generate a CommonMessageID for the out sequence
             	response.setProperty("CommonMessageID",(String)axisOutMsgCtx.getMessageID());
             }
-            
+            ////////////////////////////////////////////////////////////
            response.setServiceContext(null);
             response.setOperationContext(axisOutMsgCtx.getOperationContext());
             response.setAxisMessage(axisOutMsgCtx.getAxisOperation().getMessage(

@@ -45,11 +45,11 @@ public class SynapseMediator extends AbstractListMediator {
      * @return as per standard mediate() semantics
      */
     public boolean mediate(MessageContext synCtx) {
-		
+		// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 			current= MediatorData.createNewMediator(synCtx, this);
 		}
-		
+		// //////////////////////////
 	
         SynapseLog synLog = getLog(synCtx);
 
@@ -70,12 +70,12 @@ public class SynapseMediator extends AbstractListMediator {
             synLog.traceOrDebug("End : Mediation using '" +
                 SynapseConstants.MAIN_SEQUENCE_KEY + "' sequence");
         }
-		
+		// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 			MediatorData.setEndingTime(current);
 			synCtx.setCurrent(current.getParent());
 		}
-		
+		// //////////////////////////
      return result;        
     }
 }

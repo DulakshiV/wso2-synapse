@@ -60,12 +60,12 @@ public class DropMediator extends AbstractMediator {
 		if (synLog.isTraceOrDebugEnabled()) {
 			synLog.traceOrDebug("End : Drop mediator");
 		}
-		
+		// //////////////////////////////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 
 			collectMediatorData(synCtx.getCurrent(), synCtx);
 		}
-		
+		// //////////////////////////////////////////////
 		return false;
 	}
 

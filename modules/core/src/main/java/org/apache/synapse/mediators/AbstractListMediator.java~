@@ -57,12 +57,12 @@ public abstract class AbstractListMediator extends AbstractMediator
     }
 
     public boolean mediate(MessageContext synCtx, int mediatorPosition) {
-		
+		/////////////////////////////
 		if(CollectorEnabler.checkCollectorRequired()){
 			// Set the parent mediator that is subjected to execute its set of children mediators as the current node of this instance
 			current = synCtx.getCurrent();
 		}
-		
+		/////////////////////////
         boolean returnVal = true;
         int parentsEffectiveTraceState = synCtx.getTracingState();
         // if I have been explicitly asked to enable or disable tracing, set it to the message
@@ -91,7 +91,7 @@ public abstract class AbstractListMediator extends AbstractMediator
             for (int i = mediatorPosition; i < mediators.size(); i++) {
                 // ensure correct trace state after each invocation of a mediator
                 synCtx.setTracingState(myEffectiveTraceState);
-				
+				///////////////////////////////////////////////////////////////////////////////////////////////////////////
 				// If the current mediator is incapable of containing child mediators then it is added as an leaf-node
 				if(CollectorEnabler.checkCollectorRequired()){
 					if (!MediatorData.hasList(mediators.get(i))) {
@@ -99,12 +99,12 @@ public abstract class AbstractListMediator extends AbstractMediator
 								mediators.get(i));
 					}
 				}
-				
+				////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 if (!mediators.get(i).mediate(synCtx)) {
                     returnVal = false;
                     break;
                 }else{
-					
+					///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 					if (CollectorEnabler.checkCollectorRequired()) {
 						// To remove in/out mediators in a scenario where 'in mediator' occur in a response and 'out mediator' occur in a request
 						if (current.getChildren() != null
@@ -134,7 +134,7 @@ public abstract class AbstractListMediator extends AbstractMediator
 						synLog.traceOrDebug("********** Printing the current node after execution of the mediator from AbstractListMediator : "
 								+ current.getContents().getMediatorName());
 					}
-				
+				/////////////////////////////////////////////////////////////////////////////////////////////////////
 				}
             }
         } finally {

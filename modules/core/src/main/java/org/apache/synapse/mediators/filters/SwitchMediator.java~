@@ -84,11 +84,11 @@ public class SwitchMediator extends AbstractMediator implements ManagedLifecycle
     public boolean mediate(MessageContext synCtx) {
 
         SynapseLog synLog = getLog(synCtx);
-    	
+    	// ///////////////////////////
     	if (CollectorEnabler.checkCollectorRequired()) {
     		current= MediatorData.createNewMediator(synCtx, this);
     	}
-    	
+    	// //////////////////////////
           if (synLog.isTraceOrDebugEnabled()) {
             synLog.traceOrDebug("Start : Switch mediator");
 
@@ -118,12 +118,12 @@ public class SwitchMediator extends AbstractMediator implements ManagedLifecycle
                 if (result) {
                     ContinuationStackManager.removeReliantContinuationState(synCtx);
                 }
-               
+                // ///////////////////////////
         		if (CollectorEnabler.checkCollectorRequired()) {
         			MediatorData.setEndingTime(current);
         			synCtx.setCurrent(current.getParent());
         		}
-        		
+        		// //////////////////////////
           
                 return result;
 
@@ -142,12 +142,12 @@ public class SwitchMediator extends AbstractMediator implements ManagedLifecycle
                                 ContinuationStackManager.removeReliantContinuationState(synCtx);
                             }
                       
-                           
+                            // ///////////////////////////
                     		if (CollectorEnabler.checkCollectorRequired()) {
                     			MediatorData.setEndingTime(current);
                     			synCtx.setCurrent(current.getParent());
                     		}
-                    		
+                    		// //////////////////////////
                                               
                             return result;
                         }
@@ -163,21 +163,21 @@ public class SwitchMediator extends AbstractMediator implements ManagedLifecycle
                     if (result) {
                         ContinuationStackManager.removeReliantContinuationState(synCtx);
                     }
-                   
+                    // ///////////////////////////
             		if (CollectorEnabler.checkCollectorRequired()) {
             			MediatorData.setEndingTime(current);
             			synCtx.setCurrent(current.getParent());
             		}
-            		
+            		// //////////////////////////
                               return result;
                 } else {
                     synLog.traceOrDebug("None of the switch cases matched - no default case");
-                    
+                    // ///////////////////////////
             		if (CollectorEnabler.checkCollectorRequired()) {
                         current.getContents().setType("single");
                         synCtx.setCurrent(current.getParent());
             		}
-            		
+            		// //////////////////////////
                
 
                 }
@@ -193,11 +193,11 @@ public class SwitchMediator extends AbstractMediator implements ManagedLifecycle
 
     public boolean mediate(MessageContext synCtx,
                            ContinuationState continuationState) {
-       
+       	/////////////////////////////
     		if(CollectorEnabler.checkCollectorRequired()){
     			synCtx.setCurrent(current);
     		}
-    		
+    		////////////////////////////
     	
         SynapseLog synLog = getLog(synCtx);
 
@@ -228,12 +228,12 @@ public class SwitchMediator extends AbstractMediator implements ManagedLifecycle
                 result = mediator.mediate(synCtx, continuationState.getChildContState());
             }
         }
-		
+		// ///////////////////////////
 		if (CollectorEnabler.checkCollectorRequired()) {
 				MediatorData.setEndingTime(current);
 				synCtx.setCurrent(current.getParent());
 		}
-		
+		// //////////////////////////
 
         return result;
     }
