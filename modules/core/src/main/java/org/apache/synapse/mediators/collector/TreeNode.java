@@ -172,6 +172,7 @@ public class TreeNode implements Cloneable {
 
 		System.out.print(node.getContents().getId() + " : ");
 		System.out.println(node.getContents().getMediatorName());
+		StoreList.storage.add(node);
 		while (i < node.getChildren().size()) {
 
 			if (node.getChildren().get(i).getContents().getType()
@@ -183,6 +184,8 @@ public class TreeNode implements Cloneable {
 
 				System.out.println(node.getChildren().get(i).getContents()
 						.getMediatorName());
+			        StoreList.storage.add(node.getChildren().get(i));
+
 
 			}
 
