@@ -88,7 +88,7 @@ public class MediatorData {
 					SynapseConstants.PROXY_SERVICE).toString());
 			if(test(synCtx)){
 			newMediator.setReq_resp("Request");
-			System.out.println("Setting request");
+			
 			}
 			break;
 		}
@@ -98,7 +98,7 @@ public class MediatorData {
 					SynapseConstants.PROXY_SERVICE).toString());
 			if(!test(synCtx)){
 				newMediator.setReq_resp("Response");
-			System.out.println("Setting response");
+			
 		}
 			break;
 		}
@@ -131,7 +131,7 @@ public class MediatorData {
 					RESTConstants.SYNAPSE_REST_API).toString());
 			if(!test(synCtx)){
 				newMediator.setReq_resp("Response");
-			System.out.println("Setting response");
+			
 		}
 			break;
 		}
