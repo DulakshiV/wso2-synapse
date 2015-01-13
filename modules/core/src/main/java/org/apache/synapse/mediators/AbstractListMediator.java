@@ -109,26 +109,28 @@ public abstract class AbstractListMediator extends AbstractMediator
 						// To remove in/out mediators in a scenario where 'in mediator' occur in a response and 'out mediator' occur in a request
 						if (current.getChildren() != null
 								&& !"".equals(current.getChildren())) {
+                            if(current.getLastChild()!=null) {
 
-							if (!"".equals(current.getLastChild().getContents() // The name of the mediator is collected by getType() method. Since property mediator etc. override this method, the name is set as null
-									.getMediatorName())
-									&& current.getLastChild().getContents()
-											.getMediatorName() != null
-									&& current.getLastChild().getContents()
-											.getMediatorName()
-											.equals("Skipped")) {
+                                if (!"".equals(current.getLastChild().getContents() // The name of the mediator is collected by getType() method. Since property mediator etc. override this method, the name is set as null
+                                        .getMediatorName())
+                                        && current.getLastChild().getContents()
+                                        .getMediatorName() != null
+                                        && current.getLastChild().getContents()
+                                        .getMediatorName()
+                                        .equals("Skipped")) {
 
-								synCtx.getCurrent()
-										.getChildren()
-										.remove(synCtx.getCurrent()
-												.getLastChild());
-							}
-							// if the executed child mediator is not removed then set  its ending time
-							else {
-								MediatorData.setEndingTime(current
-										.getLastChild());
+                                    synCtx.getCurrent()
+                                            .getChildren()
+                                            .remove(synCtx.getCurrent()
+                                                    .getLastChild());
+                                }
+                                // if the executed child mediator is not removed then set  its ending time
+                                else {
+                                    MediatorData.setEndingTime(current
+                                            .getLastChild());
 
-							}
+                                }
+                            }
 						}
 						current = synCtx.getCurrent();
 						synLog.traceOrDebug("********** Printing the current node after execution of the mediator from AbstractListMediator : "
