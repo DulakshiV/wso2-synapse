@@ -70,7 +70,7 @@ public abstract class FaultHandler {
         try {
             synCtx.getServiceLog().info("FaultHandler executing impl: " + this.getClass().getName());
             onFault(synCtx);
-			///////////////////////////////////////////
+		 
     	if (CollectorEnabler.checkCollectorRequired()) {
              synCtx.getCurrent().getContents().setEndTime(System.currentTimeMillis());
 		}
@@ -92,7 +92,7 @@ public abstract class FaultHandler {
 
         boolean traceOn = synCtx.getTracingState() == SynapseConstants.TRACING_ON;
         boolean traceOrDebugOn = traceOn || log.isDebugEnabled();
-        // /////////////////////////////////////////
+        
         if (CollectorEnabler.checkCollectorRequired()) {
         	// If this method is invoked from the call mediator ppublish the
         	// current tree to the list
@@ -101,8 +101,7 @@ public abstract class FaultHandler {
         			.getMediatorName().contains("Call")) {
         		MediatorData.toTheList((TreeNode) synCtx.getProperty("Root"));
         	}
-        }
-        // ////////////////////////////////////////
+        } 
         
         if (e != null && synCtx.getProperty(SynapseConstants.ERROR_CODE) == null) {
             synCtx.setProperty(SynapseConstants.ERROR_CODE, SynapseConstants.DEFAULT_ERROR);
@@ -142,11 +141,11 @@ public abstract class FaultHandler {
             	throw new RuntimeException(se);
             }
         }
-///////////////////////////////////////////
+ 
         if (CollectorEnabler.checkCollectorRequired()) {
         	MediatorData.toTheList((TreeNode)synCtx.getProperty("NonFaultRoot"));
         }
-///////////////////////////////////////////
+ 
     }
 
     /**
