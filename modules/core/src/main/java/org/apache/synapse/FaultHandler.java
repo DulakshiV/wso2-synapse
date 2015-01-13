@@ -173,5 +173,4 @@ public abstract class FaultHandler {
         }
         log.warn(msg);
     }
-
 }
